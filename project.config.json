@@ -2,7 +2,7 @@
   "miniprogramRoot": "dist/",
   "projectname": "what-to-eat",
   "description": "今天吃什么 — 随机抽一家周边餐厅",
-  "appid": "touristappid",
+  "appid": "wx5c19176cc2e69380",
   "setting": {
     "urlCheck": true,
     "es6": false,
@@ -20,11 +20,30 @@
     "checkSiteMap": true,
     "uploadWithSourceMap": true,
     "useCompilerPlugins": false,
-    "babelSetting": { "ignore": [], "disablePlugins": [], "outputPath": "" }
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    },
+    "compileWorklet": false,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true
   },
   "compileType": "miniprogram",
   "libVersion": "3.0.0",
   "srcMiniprogramRoot": "",
-  "packOptions": { "ignore": [], "include": [] },
-  "condition": {}
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "condition": {},
+  "simulatorPluginLibVersion": {},
+  "editorSetting": {}
 }
