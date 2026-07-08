@@ -1,0 +1,41 @@
+.spin {
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+.spin--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spin__loading-text {
+  font-size: 30rpx;
+  color: #888;
+}
+.spin__stage {
+  min-height: 400rpx;
+}
+.spin__message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80rpx 40rpx;
+  gap: 16rpx;
+}
+.spin__message-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #222;
+}
+.spin__message-desc {
+  font-size: 26rpx;
+  color: #888;
+  margin-bottom: 16rpx;
+}
+.spin__footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 24rpx;
+}
+.spin__history-btn {
+  width: 60%;
+}

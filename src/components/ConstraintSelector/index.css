@@ -1,0 +1,37 @@
+.constraint-selector {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 16rpx 24rpx;
+  margin: 24rpx;
+}
+.constraint-selector__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 0;
+}
+.constraint-selector__label {
+  font-size: 28rpx;
+  color: #555;
+  width: 120rpx;
+}
+.constraint-selector__pills {
+  display: flex;
+  gap: 16rpx;
+}
+.constraint-selector__pill {
+  padding: 8rpx 24rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  color: #555;
+  background: #f2f2f2;
+}
+.constraint-selector__pill.is-active {
+  background: #ff5a5f;
+  color: #fff;
+}
+.constraint-selector__picker {
+  font-size: 28rpx;
+  color: #222;
+  padding: 8rpx 16rpx;
+}

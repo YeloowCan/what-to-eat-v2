@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Taro / WeChat build output
+dist/
+.taro-cache/
+
+# WeChat devtools
+project.private.config.json
+
+# Env / secrets (Amap key lives in env, never committed)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/settings.json
+Thumbs.db
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# swc plugin cache (downloaded by Taro/babel)
+.swc/
+
+# Test / coverage
+coverage/
+
+# Scratch working area (design docs live in .scratch but keep them tracked? no — keep tracked)
+# (intentionally not ignoring .scratch — it holds PRD/issues)
