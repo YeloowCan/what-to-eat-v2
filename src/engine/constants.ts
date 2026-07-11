@@ -6,6 +6,9 @@ export const COOLDOWN_WINDOW = 3
 /** 历史保留 — rolling limit on persisted decisions (newest kept). */
 export const HISTORY_LIMIT = 50
 
+/** 转盘扇区上限 - max restaurants shown on the wheel (winner always included). */
+export const WHEEL_POOL_SIZE = 8
+
 /** The distance relaxation ladder (km), tried in order when the candidate set is empty. */
 export const DISTANCE_LADDER_KM: readonly DistanceKm[] = [1, 3, 5, 10]
 

@@ -46,3 +46,13 @@ export function suggestionOf(result: PickResult): Suggestion {
   }
   return result.suggestion
 }
+
+/** Unwrap a PickResult, asserting it is a suggestion; returns the whole variant
+ * (suggestion + wheelPool). Use this when a test needs wheelPool; use suggestionOf
+ * when only the Suggestion is needed. */
+export function suggestionResultOf(result: PickResult) {
+  if (result.kind !== 'suggestion') {
+    throw new Error(`expected a suggestion, got ${result.kind}`)
+  }
+  return result
+}

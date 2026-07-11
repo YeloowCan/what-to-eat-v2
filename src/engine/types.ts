@@ -105,5 +105,5 @@ export interface Decision {
  * empty even after full relaxation and the user must relax cuisine themselves.
  */
 export type PickResult =
-  | { kind: 'suggestion'; suggestion: Suggestion }
+  | { kind: 'suggestion'; suggestion: Suggestion; wheelPool: Restaurant[] }
   | { kind: 'needsRelaxCuisine' }

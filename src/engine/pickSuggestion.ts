@@ -1,7 +1,7 @@
 import type { Constraint, DistanceKm, GeoPoint, PickResult, PoiId, Restaurant, Suggestion } from './types'
 import type { PoiSource } from '../ports/poiSource'
 import type { Rng } from '../ports/rng'
-import { DISTANCE_LADDER_KM } from './constants'
+import { DISTANCE_LADDER_KM, WHEEL_POOL_SIZE } from './constants'
 
 export interface PickInput {
   location: GeoPoint
@@ -54,13 +54,22 @@ export async function pickSuggestion(input: PickInput): Promise<PickResult> {
     )
     if (candidates.length > 0) {
       const index = Math.floor(rng.next() * candidates.length)
+      const winner = candidates[index]
       const suggestion: Suggestion = {
-        restaurant: candidates[index],
+        restaurant: winner,
         userConstraint: constraint,
         effectiveRadiusKm: strat.radiusKm,
         cooldownWasRelaxed: !strat.useCooldown,
       }
-      return { kind: 'suggestion', suggestion }
+      // wheelPool = a sample of the candidates the winner was actually drawn from,
+      // always including the winner, capped for the wheel's readability. Order is not
+      // significant - the UI locates the winning sector by poiId. Deterministic
+      // selection (no extra RNG draw) so the pick index stays the only RNG consumption.
+      const wheelPool =
+        candidates.length <= WHEEL_POOL_SIZE
+          ? candidates
+          : [winner, ...candidates.filter((_, i) => i !== index).slice(0, WHEEL_POOL_SIZE - 1)]
+      return { kind: 'suggestion', suggestion, wheelPool }
     }
   }
   return { kind: 'needsRelaxCuisine' }

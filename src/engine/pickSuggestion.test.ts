@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { pickSuggestion } from './pickSuggestion'
+import { WHEEL_POOL_SIZE } from './constants'
 import { FakeRng } from '../ports/rng'
-import { fixedPoiSource, makeRestaurant, suggestionOf } from './testing'
+import { fixedPoiSource, makeRestaurant, suggestionOf, suggestionResultOf } from './testing'
 
 describe('pickSuggestion', () => {
   it('uniformly picks one restaurant from the candidate set (seeded RNG is assertable)', async () => {
@@ -221,5 +222,69 @@ describe('pickSuggestion', () => {
     expect(suggestion.restaurant.poiId).toBe('A')
     expect(suggestion.cooldownWasRelaxed).toBe(true)
     expect(suggestion.effectiveRadiusKm).toBe(1)
+  })
+
+  it('returns a wheelPool containing the picked restaurant', async () => {
+    const pool = [
+      makeRestaurant({ poiId: 'A' }),
+      makeRestaurant({ poiId: 'B' }),
+      makeRestaurant({ poiId: 'C' }),
+    ]
+    const result = suggestionResultOf(
+      await pickSuggestion({
+        location: { longitude: 0, latitude: 0 },
+        constraint: { distanceKm: 1, cuisine: 'any', openOnly: false },
+        cooldownPoiIds: [],
+        poiSource: fixedPoiSource(pool),
+        rng: new FakeRng([0.0]),
+      }),
+    )
+    expect(result.wheelPool.map((r) => r.poiId)).toContain(result.suggestion.restaurant.poiId)
+  })
+
+  it('wheelPool is the winning strategy\'s candidate set - excludes filtered and wider-radius restaurants', async () => {
+    // Within 1 km: A, B open; C closed. At 2 km: D open. A, B on cooldown; openOnly=true.
+    // (1 km, cooldown on) -> empty (A,B cooldown'd; C closed; D too far).
+    // (1 km, cooldown off) -> candidates = [A, B] (C closed; D too far). D is only reachable
+    // at 3 km - never in the winning candidates. wheelPool must be {A, B}: not C, not D,
+    // not a raw-pool sample.
+    const pool = [
+      makeRestaurant({ poiId: 'A', openStatus: 'open', distanceKm: 0.5 }),
+      makeRestaurant({ poiId: 'B', openStatus: 'open', distanceKm: 0.5 }),
+      makeRestaurant({ poiId: 'C', openStatus: 'closed', distanceKm: 0.5 }),
+      makeRestaurant({ poiId: 'D', openStatus: 'open', distanceKm: 2 }),
+    ]
+    const result = suggestionResultOf(
+      await pickSuggestion({
+        location: { longitude: 0, latitude: 0 },
+        constraint: { distanceKm: 1, cuisine: 'any', openOnly: true },
+        cooldownPoiIds: ['A', 'B'],
+        poiSource: fixedPoiSource(pool),
+        rng: new FakeRng([0.0]),
+      }),
+    )
+    expect(result.wheelPool.map((r) => r.poiId).sort()).toEqual(['A', 'B'])
+  })
+
+  it('caps wheelPool at WHEEL_POOL_SIZE when there are many candidates, keeping the winner', async () => {
+    // 12 candidates, all within 1 km / open / any cuisine. rng 0.0 -> winner = first (A).
+    const pool = Array.from({ length: 12 }, (_, i) =>
+      makeRestaurant({ poiId: String.fromCharCode(65 + i) }),
+    ) // A..L
+    const result = suggestionResultOf(
+      await pickSuggestion({
+        location: { longitude: 0, latitude: 0 },
+        constraint: { distanceKm: 1, cuisine: 'any', openOnly: false },
+        cooldownPoiIds: [],
+        poiSource: fixedPoiSource(pool),
+        rng: new FakeRng([0.0]),
+      }),
+    )
+    const candidateIds = pool.map((r) => r.poiId)
+    const wheelIds = result.wheelPool.map((r) => r.poiId)
+    expect(wheelIds.length).toBe(WHEEL_POOL_SIZE)
+    expect(new Set(wheelIds).size).toBe(WHEEL_POOL_SIZE) // distinct sectors
+    expect(wheelIds.every((id) => candidateIds.includes(id))).toBe(true) // drawn from candidates
+    expect(wheelIds).toContain(result.suggestion.restaurant.poiId) // winner kept
   })
 })
