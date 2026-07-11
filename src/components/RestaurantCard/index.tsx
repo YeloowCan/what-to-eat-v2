@@ -31,7 +31,16 @@ export default function RestaurantCard({
   const r = suggestion.restaurant
   const widened = suggestion.effectiveRadiusKm > suggestion.userConstraint.distanceKm
   return (
-    <View className={`restaurant-card${goldAccent ? ' restaurant-card--gold' : ''}`}>
+    <View
+      className={`restaurant-card${goldAccent ? ' restaurant-card--gold' : ''}${
+        accepted ? ' restaurant-card--accepted' : ''
+      }`}
+    >
+      {accepted && (
+        <View className='restaurant-card__stamp'>
+          <Text>就这家✓</Text>
+        </View>
+      )}
       <View className='restaurant-card__head'>
         <Text className='restaurant-card__name'>{r.name}</Text>
         <Text className='restaurant-card__cuisine'>{CUISINE_LABELS[r.cuisine]}</Text>
@@ -56,15 +65,24 @@ export default function RestaurantCard({
 
       <View className='restaurant-card__actions'>
         {accepted ? (
-          <Button className='restaurant-card__btn' type='primary' onClick={onOpenMeituan}>
+          <Button
+            className='restaurant-card__btn restaurant-card__btn--gold'
+            onClick={onOpenMeituan}
+          >
             去美团看看
           </Button>
         ) : (
           <>
-            <Button className='restaurant-card__btn' onClick={onRespin}>
+            <Button
+              className='restaurant-card__btn restaurant-card__btn--ghost'
+              onClick={onRespin}
+            >
               换一家
             </Button>
-            <Button className='restaurant-card__btn' type='primary' onClick={onAccept}>
+            <Button
+              className='restaurant-card__btn restaurant-card__btn--primary'
+              onClick={onAccept}
+            >
               就这家
             </Button>
           </>

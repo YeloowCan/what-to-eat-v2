@@ -127,7 +127,6 @@ export default function SpinPage() {
       const { decision } = acceptSuggestion({ suggestion, clock: deps.clock })
       await deps.store.saveDecision(decision)
       setAccepted(true)
-      Taro.showToast({ title: '就这家！', icon: 'success' })
     } catch {
       Taro.showToast({ title: '保存失败，请重试', icon: 'none' })
     }
