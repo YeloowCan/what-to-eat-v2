@@ -41,10 +41,22 @@ function MessageView({ title, desc, actionLabel, onAction }: MessageViewProps) {
       <Text className='spin__message-title'>{title}</Text>
       <Text className='spin__message-desc'>{desc}</Text>
       {actionLabel && onAction && (
-        <Button type='primary' onClick={onAction}>
+        <Button className='spin__message-btn' onClick={onAction}>
           {actionLabel}
         </Button>
       )}
+    </View>
+  )
+}
+
+/** Lightweight gold pulse for the locating / picking waits (ticket 06) - warm
+ * ambiance in the reserved gold, not the bare gray "正在定位…" of before. */
+function Pulse() {
+  return (
+    <View className='spin__pulse'>
+      <View className='spin__pulse-dot' />
+      <View className='spin__pulse-dot' />
+      <View className='spin__pulse-dot' />
     </View>
   )
 }
@@ -191,6 +203,7 @@ export default function SpinPage() {
   if (phase.kind === 'locating') {
     return (
       <View className='spin spin--loading'>
+        <Pulse />
         <Text className='spin__loading-text'>正在定位…</Text>
       </View>
     )
@@ -198,7 +211,10 @@ export default function SpinPage() {
 
   return (
     <View className='spin'>
-      <ConstraintSelector constraint={constraint} onChange={handleConstraintChange} />
+      <View className='spin__topbar'>
+        <ConstraintSelector constraint={constraint} onChange={handleConstraintChange} />
+        <View className='spin__history-icon' onClick={goHistory} />
+      </View>
 
       <View className='spin__stage'>
         {phase.kind === 'locFailed' && (
@@ -223,6 +239,7 @@ export default function SpinPage() {
 
         {phase.kind === 'spinning' && !showWheel && (
           <View className='spin__picking'>
+            <Pulse />
             <Text className='spin__loading-text'>正在为你挑选…</Text>
           </View>
         )}
@@ -232,7 +249,7 @@ export default function SpinPage() {
         {phase.kind === 'needsRelaxCuisine' && (
           // No "re-spin" button: re-running with the same exhausted constraint
           // would just return needsRelaxCuisine again. The user changes the
-          // constraint via the selector above, which auto-spins on change.
+          // constraint via the chip above, which auto-spins on change.
           <MessageView title='没找到符合的餐厅' desc='试试上方放宽菜系，或换一档距离' />
         )}
 
@@ -244,12 +261,6 @@ export default function SpinPage() {
             onAction={handleRespin}
           />
         )}
-      </View>
-
-      <View className='spin__footer'>
-        <Button className='spin__history-btn' onClick={goHistory}>
-          最近选过
-        </Button>
       </View>
     </View>
   )

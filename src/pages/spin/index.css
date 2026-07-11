@@ -4,18 +4,100 @@
 }
 .spin--loading {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 100vh;
 }
+
+/* Topbar (ticket 06): constraint chip on the left, history icon on the right -
+   compact so the wheel stage stays the protagonist. The chip's dropdown panel
+   overlays the stage from here. */
+.spin__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+}
+
+/* History entry as a top-right clock glyph (was a bottom "最近选过" button). */
+.spin__history-icon {
+  position: relative;
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  border: 3rpx solid var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+/* 12 o'clock hand */
+.spin__history-icon::before {
+  content: '';
+  position: absolute;
+  top: 14rpx;
+  left: 50%;
+  width: 3rpx;
+  height: 14rpx;
+  background: var(--color-text-tertiary);
+  border-radius: 2rpx;
+  transform: translateX(-50%);
+}
+/* 3 o'clock hand */
+.spin__history-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 14rpx;
+  width: 14rpx;
+  height: 3rpx;
+  background: var(--color-text-tertiary);
+  border-radius: 2rpx;
+  transform: translateY(-50%);
+}
+.spin__history-icon:active {
+  opacity: 0.5;
+}
+
+/* Lightweight gold pulse for the locating / picking waits (ticket 06). */
+.spin__pulse {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+.spin__pulse-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: var(--color-gold-soft);
+  animation: spin-pulse 900ms ease-in-out infinite;
+}
+.spin__pulse-dot:nth-child(2) {
+  animation-delay: 150ms;
+}
+.spin__pulse-dot:nth-child(3) {
+  animation-delay: 300ms;
+}
+@keyframes spin-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .spin__loading-text {
   font-size: 30rpx;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 .spin__stage {
   min-height: 400rpx;
 }
 .spin__picking {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 400rpx;
@@ -33,11 +115,18 @@
     transform: scale(1);
   }
 }
+
+/* Transition / error states as warm surface cards (ticket 06) - 暖而不刺眼. */
 .spin__message {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 80rpx 40rpx;
+  text-align: center;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5) var(--space-4);
+  margin: var(--space-4) var(--space-3);
   gap: var(--space-2);
 }
 .spin__message-title {
@@ -47,14 +136,16 @@
 }
 .spin__message-desc {
   font-size: 26rpx;
-  color: var(--color-text-tertiary);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
   margin-bottom: var(--space-2);
 }
-.spin__footer {
-  display: flex;
-  justify-content: center;
-  margin-top: var(--space-3);
-}
-.spin__history-btn {
+.spin__message-btn {
   width: 60%;
+  margin: 0;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.spin__message-btn::after {
+  border: none;
 }

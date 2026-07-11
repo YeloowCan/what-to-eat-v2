@@ -10,6 +10,7 @@ page {
   --color-primary-soft: rgba(226, 67, 59, 0.1);
   --color-on-primary: #ffffff; /* text / icons on primary or gold */
   --color-gold: #e8a33d; /* 金 - reserved: wheel landing (03) + accept lock-in (05) */
+  --color-gold-soft: #f0c987; /* 浅金 - light gold for ambient animation (locating pulse, PRD 06); the bold gold above stays reserved for 中签 + 就这家 (ADR-0004) */
   --color-text: #2a1a14; /* 深褐 - primary text */
   --color-text-secondary: #6e5a4e; /* secondary text (was #555 / #666) */
   --color-text-tertiary: #9c8b7e; /* tertiary text (was #888 / #999 / #aaa) */
@@ -32,6 +33,7 @@ page {
   /* 阴影 */
   --shadow-card: 0 4rpx 16rpx rgba(74, 36, 24, 0.08);
   --color-shadow: rgba(74, 36, 24, 0.25); /* warm shadow tint for drop-shadows */
+  --shadow-overlay: 0 8rpx 32rpx var(--color-shadow); /* floating dropdown / popover elevation */
 
   background: var(--color-bg);
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica,

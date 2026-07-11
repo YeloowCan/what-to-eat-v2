@@ -26,4 +26,10 @@
 }
 .permission-gate__btn {
   width: 80%;
+  margin: 0;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.permission-gate__btn::after {
+  border: none;
 }

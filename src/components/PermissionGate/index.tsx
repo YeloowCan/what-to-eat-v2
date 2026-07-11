@@ -30,7 +30,7 @@ export default function PermissionGate({ onRetry }: PermissionGateProps) {
       <Text className='permission-gate__desc'>
         今天吃什么需要知道你在哪，才能找到附近的餐厅。
       </Text>
-      <Button className='permission-gate__btn' type='primary' onClick={openSetting}>
+      <Button className='permission-gate__btn' onClick={openSetting}>
         去开启定位
       </Button>
     </View>

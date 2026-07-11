@@ -1,8 +1,51 @@
+/* 约束摘要 chip (ticket 06) - one tappable pill summarizing the active constraint,
+   expanding to a dropdown panel over the stage so the wheel stays the protagonist. */
 .constraint-selector {
+  position: relative;
+}
+.constraint-selector__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 480rpx;
+  padding: 12rpx var(--space-3);
+  background: var(--color-surface);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-card);
+}
+.constraint-selector__chip.is-open {
+  box-shadow: inset 0 0 0 2rpx var(--color-primary), var(--shadow-card);
+}
+.constraint-selector__chip-text {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: var(--color-text);
+}
+.constraint-selector__chip-caret {
+  font-size: 20rpx;
+  color: var(--color-text-tertiary);
+}
+.constraint-selector__panel {
+  position: absolute;
+  top: calc(100% + 10rpx);
+  left: 0;
+  z-index: 20;
+  min-width: 480rpx;
   background: var(--color-surface);
   border-radius: var(--radius-md);
-  padding: var(--space-2) var(--space-3);
-  margin: var(--space-3);
+  box-shadow: var(--shadow-overlay);
+  padding: var(--space-1) var(--space-3);
+  animation: constraint-panel-in 180ms ease both;
+}
+@keyframes constraint-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .constraint-selector__row {
   display: flex;
