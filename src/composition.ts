@@ -5,6 +5,7 @@ import { MeituanDeepLinkPort } from './adapters/meituanDeepLink'
 import type { Clock, DeepLinkPort, Rng } from './ports'
 import type { LocationPort } from './ports/locationPort'
 import type { PoiSource } from './ports/poiSource'
+import type { PoiDisplayPort } from './ports/poiDisplayPort'
 import type { DecisionStore } from './ports/decisionStore'
 import { SeededRng } from './ports/rng'
 import { SystemClock } from './ports/clock'
@@ -13,6 +14,8 @@ import { SystemClock } from './ports/clock'
 export interface AppDeps {
   location: LocationPort
   poiSource: PoiSource
+  /** Display-only port (ADR-0005); called by the UI after the reveal, never by the engine. */
+  poiDisplay: PoiDisplayPort
   store: DecisionStore
   deepLink: DeepLinkPort
   rng: Rng
@@ -27,9 +30,13 @@ const AMAP_SECRET = process.env.TARO_APP_AMAP_SECRET ?? ''
 
 /** Build the production dependency set. Called once at app launch. */
 export function createDeps(): AppDeps {
+  // One Amap instance serves both PoiSource and PoiDisplayPort so the display
+  // cache (populated during find()) is shared with the reveal card's get().
+  const amap = new AmapPoiSource({ key: AMAP_KEY, secret: AMAP_SECRET })
   return {
     location: new WxLocationPort(),
-    poiSource: new AmapPoiSource({ key: AMAP_KEY, secret: AMAP_SECRET }),
+    poiSource: amap,
+    poiDisplay: amap,
     store: new WxStorageDecisionStore(),
     deepLink: new MeituanDeepLinkPort(),
     // Seed once per launch so a session's spins vary; picks are still uniform.

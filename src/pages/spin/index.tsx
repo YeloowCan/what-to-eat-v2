@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import Taro from '@tarojs/taro'
 import { View, Text, Button } from '@tarojs/components'
 import { acceptSuggestion, pickSuggestion, DEFAULT_CONSTRAINT } from '../../engine'
-import type { Constraint, GeoPoint, Restaurant, Suggestion } from '../../engine'
+import type { Constraint, GeoPoint, PoiId, Restaurant, Suggestion } from '../../engine'
 import { getDeps } from '../../composition'
+import type { PoiDisplay } from '../../ports'
 import { LocationDeniedError } from '../../adapters/wxLocation'
 import Wheel from '../../components/Wheel'
 import RestaurantCard from '../../components/RestaurantCard'
@@ -72,6 +73,10 @@ export default function SpinPage() {
   const [winnerPoiId, setWinnerPoiId] = useState<string>('')
   const [spinKey, setSpinKey] = useState(0)
   const [spinDuration, setSpinDuration] = useState(FIRST_SPIN_MS)
+  // Display info (ADR-0005) for the revealed restaurant - fetched by poiId on
+  // reveal, null while loading. Bound to spinToken (see loadDisplay) so a respin
+  // / constraint-change never flashes a stale restaurant's photo on the new card.
+  const [displayInfo, setDisplayInfo] = useState<PoiDisplay | null>(null)
   // Stale-result guard: each spin gets a token; a result is applied only if no
   // newer spin superseded it. Lets respin / constraint-change overlap an in-flight
   // fetch without flashing a stale pick (ticket 04 no-flicker handoff).
@@ -91,6 +96,7 @@ export default function SpinPage() {
       setAccepted(false)
       setSuggestion(null)
       setWheelPool(null)
+      setDisplayInfo(null)
     }
     try {
       const cooldownPoiIds = await deps.store.getCooldownPoiIds()
@@ -106,6 +112,12 @@ export default function SpinPage() {
         setSuggestion(result.suggestion)
         setWinnerPoiId(result.suggestion.restaurant.poiId)
         setAccepted(false)
+        // Clear any prior display info so the old restaurant's photo never
+        // flashes on the new card, then fetch by poiId for the reveal (both the
+        // wheel-landing and the <4 skip-wheel paths). The card's own poiId guard
+        // and loadDisplay's token guard double-protect against stale draws.
+        setDisplayInfo(null)
+        void loadDisplay(result.suggestion.restaurant.poiId, token)
         if (result.wheelPool.length < SKIP_WHEEL_MIN) {
           // Too few candidates to be worth a wheel - reveal the card directly.
           setWheelPool(null)
@@ -124,6 +136,23 @@ export default function SpinPage() {
     } catch {
       if (token !== spinToken.current) return
       setPhase({ kind: 'error' })
+    }
+  }
+
+  /**
+   * Fetch display info for the revealed restaurant, bound to the spin token: a
+   * result is applied only if no newer spin superseded it (same guard as the
+   * pick itself - ticket 04 no-flicker handoff, extended to display info per
+   * ADR-0005). Any failure degrades silently to null -> the card's placeholder.
+   */
+  async function loadDisplay(poiId: PoiId, token: number) {
+    try {
+      const d = await deps.poiDisplay.get(poiId)
+      if (token !== spinToken.current) return // a newer spin superseded this one
+      setDisplayInfo(d)
+    } catch {
+      if (token !== spinToken.current) return
+      setDisplayInfo(null)
     }
   }
 
@@ -176,6 +205,31 @@ export default function SpinPage() {
     }
   }
 
+  /** Navigate to the restaurant via its GeoPoint (ADR-0005 issue 03 - the address
+   * string is just the label; the coordinates come from Restaurant.location). */
+  async function handleNavigate() {
+    if (!suggestion) return
+    const { longitude, latitude } = suggestion.restaurant.location
+    try {
+      await Taro.openLocation({
+        longitude,
+        latitude,
+        name: suggestion.restaurant.name,
+        scale: 18,
+      })
+    } catch {
+      Taro.showToast({ title: '打不开导航', icon: 'none' })
+    }
+  }
+
+  async function handleCall(phone: string) {
+    try {
+      await Taro.makePhoneCall({ phoneNumber: phone })
+    } catch {
+      Taro.showToast({ title: '拨号失败', icon: 'none' })
+    }
+  }
+
   function goHistory() {
     Taro.navigateTo({ url: '/pages/history/index' })
   }
@@ -186,9 +240,12 @@ export default function SpinPage() {
       <RestaurantCard
         suggestion={suggestion}
         accepted={accepted}
+        displayInfo={displayInfo}
         onAccept={handleAccept}
         onRespin={handleRespin}
         onOpenMeituan={handleOpenMeituan}
+        onNavigate={handleNavigate}
+        onCall={handleCall}
         goldAccent={goldAccent}
       />
     )

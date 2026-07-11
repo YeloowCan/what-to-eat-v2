@@ -1,6 +1,7 @@
 // Port interfaces + pure impls (Rng/Clock). The decision engine depends on
 // these contracts; the adapters in ../adapters implement the wx/Amap side.
 export type { PoiSource, PoiQuery } from './poiSource'
+export type { PoiDisplay, PoiDisplayPort } from './poiDisplayPort'
 export type { LocationPort } from './locationPort'
 export type { DecisionStore } from './decisionStore'
 export type { DeepLinkPort } from './deepLinkPort'
