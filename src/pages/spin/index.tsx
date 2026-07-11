@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Taro from '@tarojs/taro'
 import { View, Text, Button } from '@tarojs/components'
 import { acceptSuggestion, pickSuggestion, DEFAULT_CONSTRAINT } from '../../engine'
@@ -21,6 +21,9 @@ type Phase =
   | { kind: 'error' }
 
 const FIRST_SPIN_MS = 2500
+/** Respin (换一家 / constraint change) is faster than the first spin - 连抽不拖,
+ * still fate, just brisker (ADR-0004 / PRD user story 7). */
+const RESPIN_MS = 1200
 /** Fewer candidates than this and the wheel is skipped - spinning one option is a
  * notice, not fate (ADR-0004). */
 const SKIP_WHEEL_MIN = 4
@@ -56,13 +59,27 @@ export default function SpinPage() {
   const [wheelPool, setWheelPool] = useState<Restaurant[] | null>(null)
   const [winnerPoiId, setWinnerPoiId] = useState<string>('')
   const [spinKey, setSpinKey] = useState(0)
+  const [spinDuration, setSpinDuration] = useState(FIRST_SPIN_MS)
+  // Stale-result guard: each spin gets a token; a result is applied only if no
+  // newer spin superseded it. Lets respin / constraint-change overlap an in-flight
+  // fetch without flashing a stale pick (ticket 04 no-flicker handoff).
+  const spinToken = useRef(0)
 
-  async function spin(loc: GeoPoint, c: Constraint) {
-    setPhase({ kind: 'spinning' })
-    setAccepted(false)
-    setSuggestion(null)
-    setWheelPool(null)
-    setSpinKey((k) => k + 1)
+  /**
+   * Run one fate draw. `clearFirst` distinguishes the bootstrap spin (nothing on
+   * screen yet -> clear to the picking placeholder) from a respin (keep the
+   * current card/wheel on screen during fetch, then swap in one render so there's
+   * no blank flicker - 卡片出 -> 转盘回 -> 快转 -> 落定 -> 卡片涌).
+   */
+  async function spin(loc: GeoPoint, c: Constraint, durationMs: number, clearFirst: boolean) {
+    const token = ++spinToken.current
+    setSpinDuration(durationMs)
+    if (clearFirst) {
+      setPhase({ kind: 'spinning' })
+      setAccepted(false)
+      setSuggestion(null)
+      setWheelPool(null)
+    }
     try {
       const cooldownPoiIds = await deps.store.getCooldownPoiIds()
       const result = await pickSuggestion({
@@ -72,21 +89,28 @@ export default function SpinPage() {
         poiSource: deps.poiSource,
         rng: deps.rng,
       })
+      if (token !== spinToken.current) return // a newer spin superseded this one
       if (result.kind === 'suggestion') {
         setSuggestion(result.suggestion)
         setWinnerPoiId(result.suggestion.restaurant.poiId)
+        setAccepted(false)
         if (result.wheelPool.length < SKIP_WHEEL_MIN) {
           // Too few candidates to be worth a wheel - reveal the card directly.
+          setWheelPool(null)
           setPhase({ kind: 'suggestion' })
         } else {
-          // Hand the real candidates to the wheel; it animates, lands on the
-          // winner, and reveals the card itself. Phase stays 'spinning'.
+          // Hand the real candidates to the wheel; bump spinKey so it remounts
+          // and re-spins to the new winner. Phase stays 'spinning' so showWheel
+          // holds - the wheel owns the stage until it reveals the card itself.
           setWheelPool(result.wheelPool)
+          setSpinKey((k) => k + 1)
+          setPhase({ kind: 'spinning' })
         }
       } else {
         setPhase({ kind: 'needsRelaxCuisine' })
       }
     } catch {
+      if (token !== spinToken.current) return
       setPhase({ kind: 'error' })
     }
   }
@@ -96,7 +120,7 @@ export default function SpinPage() {
     try {
       const loc = await deps.location.getCurrent()
       setLocation(loc)
-      await spin(loc, constraint)
+      await spin(loc, constraint, FIRST_SPIN_MS, true)
     } catch (e) {
       if (e instanceof LocationDeniedError) setPhase({ kind: 'denied' })
       else setPhase({ kind: 'locFailed' })
@@ -111,12 +135,12 @@ export default function SpinPage() {
   }, [])
 
   function handleRespin() {
-    if (location) void spin(location, constraint)
+    if (location) void spin(location, constraint, RESPIN_MS, false)
   }
 
   function handleConstraintChange(c: Constraint) {
     setConstraint(c)
-    if (location) void spin(location, c)
+    if (location) void spin(location, c, RESPIN_MS, false)
   }
 
   async function handleAccept() {
@@ -191,7 +215,7 @@ export default function SpinPage() {
             key={spinKey}
             wheelPool={wheelPool!}
             winnerPoiId={winnerPoiId}
-            durationMs={FIRST_SPIN_MS}
+            durationMs={spinDuration}
           >
             {renderCard(true)}
           </Wheel>
