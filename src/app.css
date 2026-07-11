@@ -6,6 +6,7 @@ page {
   --color-bg: #fff7ed; /* 暖米 - page background */
   --color-surface: #ffffff; /* 卡片 / 容器 */
   --color-primary: #e2433b; /* 朱红 - active states, cuisine tags, accents */
+  --color-primary-dark: #a82a23; /* 深朱红 - alternating wheel sector */
   --color-primary-soft: rgba(226, 67, 59, 0.1);
   --color-on-primary: #ffffff; /* text / icons on primary or gold */
   --color-gold: #e8a33d; /* 金 - reserved: wheel landing (03) + accept lock-in (05) */
@@ -30,6 +31,7 @@ page {
   --space-5: 48rpx;
   /* 阴影 */
   --shadow-card: 0 4rpx 16rpx rgba(74, 36, 24, 0.08);
+  --color-shadow: rgba(74, 36, 24, 0.25); /* warm shadow tint for drop-shadows */
 
   background: var(--color-bg);
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica,

@@ -1,25 +1,69 @@
 .wheel {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: center;
   padding: var(--space-5) 0;
 }
-.wheel__spinner {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 50%;
-  border: 12rpx solid var(--color-muted-bg);
-  border-top-color: var(--color-primary);
-  animation: wheel-spin 0.8s linear infinite;
-  margin-bottom: var(--space-3);
+.wheel__stage {
+  position: relative;
+  width: 560rpx;
+  height: 560rpx;
 }
-.wheel__text {
-  font-size: 28rpx;
-  color: var(--color-text-tertiary);
+.wheel__dial {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: var(--shadow-card);
+}
+.wheel--revealed .wheel__dial {
+  opacity: 0;
+}
+.wheel__spoke {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 50%;
+  transform-origin: 0 100%;
+}
+.wheel__spoke-name {
+  position: absolute;
+  top: 40rpx;
+  left: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+.wheel__pointer {
+  position: absolute;
+  top: -22rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 20rpx solid transparent;
+  border-right: 20rpx solid transparent;
+  border-top: 44rpx solid var(--color-gold);
+  z-index: 3;
+  filter: drop-shadow(0 2rpx 4rpx var(--color-shadow));
+}
+.wheel__card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  animation: wheel-emerge 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-@keyframes wheel-spin {
+@keyframes wheel-emerge {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -30%) scale(0.82);
+  }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 }

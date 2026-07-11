@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import Taro from '@tarojs/taro'
 import { View, Text, Button } from '@tarojs/components'
 import { acceptSuggestion, pickSuggestion, DEFAULT_CONSTRAINT } from '../../engine'
-import type { Constraint, GeoPoint, Suggestion } from '../../engine'
+import type { Constraint, GeoPoint, Restaurant, Suggestion } from '../../engine'
 import { getDeps } from '../../composition'
 import { LocationDeniedError } from '../../adapters/wxLocation'
 import Wheel from '../../components/Wheel'
@@ -20,8 +20,10 @@ type Phase =
   | { kind: 'needsRelaxCuisine' }
   | { kind: 'error' }
 
-const MIN_SPIN_MS = 800
-const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+const FIRST_SPIN_MS = 2500
+/** Fewer candidates than this and the wheel is skipped - spinning one option is a
+ * notice, not fate (ADR-0004). */
+const SKIP_WHEEL_MIN = 4
 
 interface MessageViewProps {
   title: string
@@ -51,29 +53,37 @@ export default function SpinPage() {
   const [constraint, setConstraint] = useState<Constraint>(DEFAULT_CONSTRAINT)
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null)
   const [accepted, setAccepted] = useState(false)
+  const [wheelPool, setWheelPool] = useState<Restaurant[] | null>(null)
+  const [winnerPoiId, setWinnerPoiId] = useState<string>('')
+  const [spinKey, setSpinKey] = useState(0)
 
   async function spin(loc: GeoPoint, c: Constraint) {
     setPhase({ kind: 'spinning' })
     setAccepted(false)
+    setSuggestion(null)
+    setWheelPool(null)
+    setSpinKey((k) => k + 1)
     try {
       const cooldownPoiIds = await deps.store.getCooldownPoiIds()
-      // Race the (network) pick against a minimum spin duration so the wheel
-      // always has a beat of "fate" even on a fast fetch.
-      const [result] = await Promise.all([
-        pickSuggestion({
-          location: loc,
-          constraint: c,
-          cooldownPoiIds,
-          poiSource: deps.poiSource,
-          rng: deps.rng,
-        }),
-        delay(MIN_SPIN_MS),
-      ])
+      const result = await pickSuggestion({
+        location: loc,
+        constraint: c,
+        cooldownPoiIds,
+        poiSource: deps.poiSource,
+        rng: deps.rng,
+      })
       if (result.kind === 'suggestion') {
         setSuggestion(result.suggestion)
-        setPhase({ kind: 'suggestion' })
+        setWinnerPoiId(result.suggestion.restaurant.poiId)
+        if (result.wheelPool.length < SKIP_WHEEL_MIN) {
+          // Too few candidates to be worth a wheel - reveal the card directly.
+          setPhase({ kind: 'suggestion' })
+        } else {
+          // Hand the real candidates to the wheel; it animates, lands on the
+          // winner, and reveals the card itself. Phase stays 'spinning'.
+          setWheelPool(result.wheelPool)
+        }
       } else {
-        setSuggestion(null)
         setPhase({ kind: 'needsRelaxCuisine' })
       }
     } catch {
@@ -135,6 +145,22 @@ export default function SpinPage() {
     Taro.navigateTo({ url: '/pages/history/index' })
   }
 
+  function renderCard(goldAccent = false) {
+    if (!suggestion) return null
+    return (
+      <RestaurantCard
+        suggestion={suggestion}
+        accepted={accepted}
+        onAccept={handleAccept}
+        onRespin={handleRespin}
+        onOpenMeituan={handleOpenMeituan}
+        goldAccent={goldAccent}
+      />
+    )
+  }
+
+  const showWheel = phase.kind === 'spinning' && wheelPool != null && wheelPool.length >= SKIP_WHEEL_MIN
+
   if (phase.kind === 'denied') {
     return <PermissionGate onRetry={locate} />
   }
@@ -161,19 +187,24 @@ export default function SpinPage() {
           />
         )}
 
-        {phase.kind === 'spinning' && <Wheel spinning />}
-
-        {phase.kind === 'suggestion' && suggestion && (
-          <Wheel spinning={false}>
-            <RestaurantCard
-              suggestion={suggestion}
-              accepted={accepted}
-              onAccept={handleAccept}
-              onRespin={handleRespin}
-              onOpenMeituan={handleOpenMeituan}
-            />
+        {showWheel && (
+          <Wheel
+            key={spinKey}
+            wheelPool={wheelPool!}
+            winnerPoiId={winnerPoiId}
+            durationMs={FIRST_SPIN_MS}
+          >
+            {renderCard(true)}
           </Wheel>
         )}
+
+        {phase.kind === 'spinning' && !showWheel && (
+          <View className='spin__picking'>
+            <Text className='spin__loading-text'>正在为你挑选…</Text>
+          </View>
+        )}
+
+        {phase.kind === 'suggestion' && <View className='spin__card'>{renderCard()}</View>}
 
         {phase.kind === 'needsRelaxCuisine' && (
           // No "re-spin" button: re-running with the same exhausted constraint

@@ -14,6 +14,25 @@
 .spin__stage {
   min-height: 400rpx;
 }
+.spin__picking {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400rpx;
+}
+.spin__card {
+  animation: spin-card-in 300ms ease both;
+}
+@keyframes spin-card-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 .spin__message {
   display: flex;
   flex-direction: column;

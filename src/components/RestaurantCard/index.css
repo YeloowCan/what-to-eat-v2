@@ -1,9 +1,13 @@
 .restaurant-card {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
+  border-top: 6rpx solid transparent;
   padding: var(--space-4);
   margin: var(--space-3);
   box-shadow: var(--shadow-card);
+}
+.restaurant-card--gold {
+  border-top-color: var(--color-gold);
 }
 .restaurant-card__head {
   display: flex;

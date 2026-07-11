@@ -9,6 +9,9 @@ export interface RestaurantCardProps {
   onAccept: () => void
   onRespin: () => void
   onOpenMeituan: () => void
+  /** Gold top accent - on when the card emerged from the wheel's gold landing.
+   * ADR-0004 reserves gold for 中签 + 就这家; off in the <4 skip path. */
+  goldAccent?: boolean
 }
 
 /**
@@ -23,11 +26,12 @@ export default function RestaurantCard({
   onAccept,
   onRespin,
   onOpenMeituan,
+  goldAccent = false,
 }: RestaurantCardProps) {
   const r = suggestion.restaurant
   const widened = suggestion.effectiveRadiusKm > suggestion.userConstraint.distanceKm
   return (
-    <View className='restaurant-card'>
+    <View className={`restaurant-card${goldAccent ? ' restaurant-card--gold' : ''}`}>
       <View className='restaurant-card__head'>
         <Text className='restaurant-card__name'>{r.name}</Text>
         <Text className='restaurant-card__cuisine'>{CUISINE_LABELS[r.cuisine]}</Text>
