@@ -1,5 +1,37 @@
 page {
-  background: #f6f6f6;
+  /* 命运抽签 design language (ADR-0004). These tokens are the single source of
+     truth - components reference them, never raw color values. Brand palette per
+     ADR-0004 / .scratch/ui-redesign/PRD.md; semantic colors warmed to match. */
+  /* 调色 */
+  --color-bg: #fff7ed; /* 暖米 - page background */
+  --color-surface: #ffffff; /* 卡片 / 容器 */
+  --color-primary: #e2433b; /* 朱红 - active states, cuisine tags, accents */
+  --color-primary-soft: rgba(226, 67, 59, 0.1);
+  --color-on-primary: #ffffff; /* text / icons on primary or gold */
+  --color-gold: #e8a33d; /* 金 - reserved: wheel landing (03) + accept lock-in (05) */
+  --color-text: #2a1a14; /* 深褐 - primary text */
+  --color-text-secondary: #6e5a4e; /* secondary text (was #555 / #666) */
+  --color-text-tertiary: #9c8b7e; /* tertiary text (was #888 / #999 / #aaa) */
+  --color-success: #00aa88; /* 营业中 */
+  --color-success-soft: rgba(0, 170, 136, 0.1);
+  --color-warning: #b07a00; /* 放宽提示 */
+  --color-warning-soft: rgba(255, 196, 0, 0.12);
+  --color-muted-bg: #f3ece2; /* 打烊状态 / 未选中底 (was #f2f2f2, warmed) */
+  /* 圆角 */
+  --radius-sm: 12rpx;
+  --radius-md: 16rpx;
+  --radius-lg: 20rpx;
+  --radius-pill: 999rpx;
+  /* 间距 */
+  --space-1: 8rpx;
+  --space-2: 16rpx;
+  --space-3: 24rpx;
+  --space-4: 32rpx;
+  --space-5: 48rpx;
+  /* 阴影 */
+  --shadow-card: 0 4rpx 16rpx rgba(74, 36, 24, 0.08);
+
+  background: var(--color-bg);
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica,
     Segoe UI, Arial, Roboto, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
     sans-serif;

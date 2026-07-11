@@ -1,24 +1,24 @@
 .history {
-  padding: 24rpx;
+  padding: var(--space-3);
 }
 .history__title {
   font-size: 32rpx;
   font-weight: 600;
-  color: #222;
-  margin: 16rpx 8rpx 24rpx;
+  color: var(--color-text);
+  margin: var(--space-2) var(--space-1) var(--space-3);
 }
 .history__empty {
   display: block;
   text-align: center;
-  color: #999;
+  color: var(--color-text-tertiary);
   font-size: 28rpx;
   padding: 120rpx 0;
 }
 .history__item {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  margin-bottom: 16rpx;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin-bottom: var(--space-2);
 }
 .history__item-head {
   display: flex;
@@ -29,11 +29,11 @@
 .history__item-name {
   font-size: 32rpx;
   font-weight: 600;
-  color: #222;
+  color: var(--color-text);
 }
 .history__item-cuisine {
   font-size: 24rpx;
-  color: #ff5a5f;
+  color: var(--color-primary);
 }
 .history__item-meta {
   display: flex;
@@ -41,9 +41,9 @@
 }
 .history__item-time {
   font-size: 24rpx;
-  color: #999;
+  color: var(--color-text-tertiary);
 }
 .history__item-constraint {
   font-size: 24rpx;
-  color: #aaa;
+  color: var(--color-text-tertiary);
 }

@@ -3,7 +3,7 @@ export default defineAppConfig({
   pages: ['pages/spin/index', 'pages/history/index'],
   window: {
     backgroundTextStyle: 'light',
-    navigationBarBackgroundColor: '#ffffff',
+    navigationBarBackgroundColor: '#FFF7ED',
     navigationBarTitleText: '今天吃什么',
     navigationBarTextStyle: 'black',
   },
