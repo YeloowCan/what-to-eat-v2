@@ -5,8 +5,8 @@
 }
 .wheel__stage {
   position: relative;
-  width: 560rpx;
-  height: 560rpx;
+  width: 620rpx;
+  height: 620rpx;
 }
 .wheel__dial {
   position: absolute;

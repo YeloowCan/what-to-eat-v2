@@ -1,4 +1,6 @@
 .spin {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   padding-bottom: 40rpx;
 }
@@ -18,6 +20,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-2) var(--space-3);
+  flex-shrink: 0;
 }
 
 /* History entry as a top-right clock glyph (was a bottom "最近选过" button). */
@@ -92,8 +95,14 @@
   font-size: 30rpx;
   color: var(--color-text-secondary);
 }
+/* Stage fills the viewport below the topbar and centers its content (wheel /
+   card / message) vertically - without this the stage hugged the top and left
+   the bottom half of the screen empty. */
 .spin__stage {
-  min-height: 400rpx;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .spin__picking {
   display: flex;
