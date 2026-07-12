@@ -133,8 +133,11 @@ export default function SpinPage() {
       } else {
         setPhase({ kind: 'needsRelaxCuisine' })
       }
-    } catch {
+    } catch (err) {
+      // Surface the real reason (Amap `info`, wx.request domain rejection,
+      // etc.) so a failure isn't a black box - the MessageView below is generic.
       if (token !== spinToken.current) return
+      console.error('[spin] 拉取周边餐厅失败', err)
       setPhase({ kind: 'error' })
     }
   }

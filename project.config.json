@@ -4,7 +4,7 @@
   "description": "今天吃什么 — 随机抽一家周边餐厅",
   "appid": "wx5c19176cc2e69380",
   "setting": {
-    "urlCheck": true,
+    "urlCheck": false,
     "es6": false,
     "enhance": false,
     "postcss": false,
@@ -37,7 +37,7 @@
     "disableSWC": true
   },
   "compileType": "miniprogram",
-  "libVersion": "3.0.0",
+  "libVersion": "3.16.2",
   "srcMiniprogramRoot": "",
   "packOptions": {
     "ignore": [],

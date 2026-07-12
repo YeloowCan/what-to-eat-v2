@@ -25,13 +25,17 @@ interface AmapPoiRaw {
   typecode: string
   location: string // "lng,lat"
   distance: string // meters, as a string
-  address?: string
-  pname?: string
-  cityname?: string
-  adname?: string
-  tel?: string
+  // ⚠ Amap returns these optional scalar fields as an empty array `[]` (not
+  // null or "") when the value is absent - a known REST inconsistency. The
+  // mappers coerce via asString() / typeof guards instead of assuming string;
+  // otherwise a single POI with tel:[] crashes the whole find() (ADR-0005).
+  address?: string | string[]
+  pname?: string | string[]
+  cityname?: string | string[]
+  adname?: string | string[]
+  tel?: string | string[]
   photos?: AmapPhotoRaw[]
-  biz_ext?: { open_mode?: string; open_time?: string; [k: string]: unknown }
+  biz_ext?: { open_mode?: string | string[]; open_time?: string | string[]; [k: string]: unknown }
 }
 
 interface AmapAroundResponse {
@@ -152,6 +156,15 @@ function toRestaurant(p: AmapPoiRaw): Restaurant | null {
 }
 
 /**
+ * Coerce an Amap scalar field to a trimmed string or null. Amap returns absent
+ * scalars as `[]` (empty array), not null/"" - so `.trim()` on the raw value
+ * throws. Guard on typeof so the mapper never assumes string (ADR-0005).
+ */
+function asString(v: unknown): string | null {
+  return typeof v === 'string' ? v.trim() || null : null
+}
+
+/**
  * Project the raw around payload's display fields into a PoiDisplay. Pure
  * mapping (adapter glue, not unit-tested - same stance as toRestaurant /
  * parseOpenStatus, verified in Devtools). Missing fields -> null so the UI can
@@ -160,14 +173,14 @@ function toRestaurant(p: AmapPoiRaw): Restaurant | null {
 function toDisplay(p: AmapPoiRaw): PoiDisplay {
   const photoUrl = p.photos?.[0]?.url || null
   const addressParts = [p.pname, p.cityname, p.adname, p.address].filter(
-    (s): s is string => !!s && s.length > 0,
+    (s): s is string => typeof s === 'string' && s.length > 0,
   )
   const address = addressParts.join('') || null
-  const telRaw = p.tel?.trim() || ''
+  const tel = asString(p.tel)
   // Amap `tel` can hold several numbers separated by ';'; take the first for
   // makePhoneCall (给一个就够了).
-  const phone = telRaw ? telRaw.split(';')[0].trim() || null : null
-  const openHours = p.biz_ext?.open_time?.trim() || null
+  const phone = tel ? tel.split(';')[0].trim() || null : null
+  const openHours = asString(p.biz_ext?.open_time)
   return { poiId: p.id, photoUrl, address, phone, openHours }
 }
 
